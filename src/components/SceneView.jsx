@@ -50,6 +50,7 @@ export default function SceneView({
   onPrevious,
   onNext,
   onRestart,
+  onFinish,
   onBack,
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -217,8 +218,8 @@ export default function SceneView({
                 <button className="secondaryButton" type="button" onClick={onRestart}>
                   Leer de nuevo
                 </button>
-                <button className="primaryButton" type="button" onClick={onBack}>
-                  Volver a historias
+                <button className="primaryButton" type="button" onClick={onFinish}>
+                  Ver final
                 </button>
               </>
             )}

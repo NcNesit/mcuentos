@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import SceneView from "./SceneView";
+import StoryCompletion from "./StoryCompletion";
 import {
   initializeSoundEffects,
   playFinalSceneSound,
@@ -22,6 +23,7 @@ export default function StoryPlayer({
 }) {
   const [sceneIndex, setSceneIndex] = useState(initialSceneIndex);
   const [playSignal, setPlaySignal] = useState(0);
+  const [showCompletion, setShowCompletion] = useState(false);
   const [autoNarrationEnabled, setAutoNarrationEnabled] = useState(
     readingMode === "narrated"
   );
@@ -65,6 +67,7 @@ export default function StoryPlayer({
 
   function moveToScene(nextIndex, options = {}) {
     clearAdvanceTimer();
+    setShowCompletion(false);
     const boundedIndex = Math.min(Math.max(nextIndex, 0), story.scenes.length - 1);
     setSceneIndex(boundedIndex);
     playPageTurnSound({ sleepMode });
@@ -83,6 +86,7 @@ export default function StoryPlayer({
   }
 
   function handleRestart() {
+    setShowCompletion(false);
     moveToScene(0);
     if (readingMode === "narrated") {
       window.setTimeout(() => setPlaySignal((value) => value + 1), 250);
@@ -91,7 +95,12 @@ export default function StoryPlayer({
 
   function handleAudioEnded() {
     if (!autoNarrationEnabled || readingMode !== "narrated" || isLastScene) {
-      if (isLastScene) playFinalSceneSound({ sleepMode });
+      if (isLastScene) {
+        playFinalSceneSound({ sleepMode });
+        advanceTimerRef.current = window.setTimeout(() => {
+          setShowCompletion(true);
+        }, 900);
+      }
       return;
     }
 
@@ -114,6 +123,22 @@ export default function StoryPlayer({
     onBack();
   }
 
+  function handleFinishStory() {
+    clearAdvanceTimer();
+    playFinalSceneSound({ sleepMode });
+    setShowCompletion(true);
+  }
+
+  if (showCompletion) {
+    return (
+      <StoryCompletion
+        story={story}
+        onBack={handleBack}
+        onRestart={handleRestart}
+      />
+    );
+  }
+
   return (
     <main className="playerShell">
       <SceneView
@@ -130,6 +155,7 @@ export default function StoryPlayer({
         onPrevious={handlePrevious}
         onNext={handleNext}
         onRestart={handleRestart}
+        onFinish={handleFinishStory}
         onBack={handleBack}
       />
     </main>
