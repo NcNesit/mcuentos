@@ -3,6 +3,39 @@
 import { useEffect, useState } from "react";
 import AudioControls from "./AudioControls";
 
+function ProgressDots({ story, sceneIndex, compact = false }) {
+  return (
+    <div className={compact ? "dotProgress dotProgressCompact" : "dotProgress"} aria-hidden="true">
+      {story.scenes.map((storyScene, index) => (
+        <span
+          key={storyScene.id}
+          className={index <= sceneIndex ? "isComplete" : ""}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SceneImage({ scene, imageFailed, setImageFailed, narrated = false }) {
+  return (
+    <div className={narrated ? "sceneImageStage narratedImageStage" : "sceneImageStage"}>
+      {!imageFailed && (
+        <img
+          className={narrated ? "sceneImage narratedSceneImage" : "sceneImage"}
+          src={scene.imageUrl}
+          alt=""
+          onError={() => setImageFailed(true)}
+        />
+      )}
+      {imageFailed && (
+        <div className={narrated ? "scenePlaceholder narratedPlaceholder" : "scenePlaceholder"}>
+          <span>{scene.title}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function SceneView({
   story,
   scene,
@@ -24,11 +57,57 @@ export default function SceneView({
   const isFirstScene = sceneIndex === 0;
   const isLastScene = sceneIndex === story.scenes.length - 1;
   const isLongText = scene.text.length > 150;
+  const isNarratedMode = readingMode === "narrated";
 
   useEffect(() => {
     setExpanded(readingMode === "parent");
     setImageFailed(false);
   }, [scene.id, readingMode]);
+
+  if (isNarratedMode) {
+    return (
+      <section className="sceneSlide sceneSlideNarrated" aria-label={scene.title}>
+        <div
+          className="sceneBackdrop"
+          style={{ backgroundImage: imageFailed ? "none" : `url(${scene.imageUrl})` }}
+        />
+
+        <header className="narratedHeader">
+          <button className="ghostButton narratedBackButton" type="button" onClick={onBack}>
+            <span aria-hidden="true">←</span>
+            Volver
+          </button>
+
+          <div className="narratedHeaderCenter">
+            <span className="playerTitle narratedTitle">{scene.title}</span>
+            <ProgressDots story={story} sceneIndex={sceneIndex} compact />
+          </div>
+        </header>
+
+        <SceneImage
+          scene={scene}
+          imageFailed={imageFailed}
+          setImageFailed={setImageFailed}
+          narrated
+        />
+
+        <div className="narratedControls">
+          <AudioControls
+            compact
+            audioUrl={scene.narrationAudioUrl}
+            sceneId={scene.id}
+            playSignal={playSignal}
+            narrationEnabled={narrationEnabled}
+            onEnded={onAudioEnded}
+            onUnavailable={onAudioUnavailable}
+          />
+          <button className="narratedExitButton" type="button" onClick={onBack}>
+            Salir del cuento
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="sceneSlide" aria-label={scene.title}>
@@ -48,14 +127,7 @@ export default function SceneView({
           <span className="sceneCounter">
             Escena {sceneIndex + 1} de {story.scenes.length}
           </span>
-          <div className="dotProgress" aria-hidden="true">
-            {story.scenes.map((storyScene, index) => (
-              <span
-                key={storyScene.id}
-                className={index <= sceneIndex ? "isComplete" : ""}
-              />
-            ))}
-          </div>
+          <ProgressDots story={story} sceneIndex={sceneIndex} />
         </div>
 
         <div className="playerLogo" aria-hidden="true">
@@ -63,21 +135,11 @@ export default function SceneView({
         </div>
       </header>
 
-      <div className="sceneImageStage">
-        {!imageFailed && (
-          <img
-            className="sceneImage"
-            src={scene.imageUrl}
-            alt=""
-            onError={() => setImageFailed(true)}
-          />
-        )}
-        {imageFailed && (
-          <div className="scenePlaceholder">
-            <span>{scene.title}</span>
-          </div>
-        )}
-      </div>
+      <SceneImage
+        scene={scene}
+        imageFailed={imageFailed}
+        setImageFailed={setImageFailed}
+      />
 
       <div
         className={

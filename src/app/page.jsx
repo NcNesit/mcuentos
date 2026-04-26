@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import StoryList from "@/components/StoryList";
 import StoryPlayer from "@/components/StoryPlayer";
 import { stories } from "@/data/stories";
@@ -41,7 +41,7 @@ export default function HomePage() {
     [activeStoryId]
   );
 
-  function handleToggleFavorite(storyId) {
+  const handleToggleFavorite = useCallback(function handleToggleFavorite(storyId) {
     setFavoriteIds((currentFavorites) => {
       const nextFavorites = currentFavorites.includes(storyId)
         ? currentFavorites.filter((id) => id !== storyId)
@@ -49,30 +49,30 @@ export default function HomePage() {
       saveFavoriteStories(nextFavorites);
       return nextFavorites;
     });
-  }
+  }, []);
 
-  function handleStartStory(storyId, sceneIndex = 0) {
+  const handleStartStory = useCallback(function handleStartStory(storyId, sceneIndex = 0) {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     setActiveStoryId(storyId);
     setInitialSceneIndex(sceneIndex);
-  }
+  }, []);
 
-  function handleProgressChange(storyId, sceneIndex) {
+  const handleProgressChange = useCallback(function handleProgressChange(storyId, sceneIndex) {
     setProgress((currentProgress) => {
       const nextProgress = saveLastProgress(storyId, sceneIndex);
       return { ...currentProgress, ...nextProgress };
     });
-  }
+  }, []);
 
-  function handleReadingModeChange(nextMode) {
+  const handleReadingModeChange = useCallback(function handleReadingModeChange(nextMode) {
     setReadingMode(nextMode);
     saveReadingMode(nextMode);
-  }
+  }, []);
 
-  function handleSleepModeChange(nextValue) {
+  const handleSleepModeChange = useCallback(function handleSleepModeChange(nextValue) {
     setSleepMode(nextValue);
     saveSleepMode(nextValue);
-  }
+  }, []);
 
   if (activeStory) {
     return (

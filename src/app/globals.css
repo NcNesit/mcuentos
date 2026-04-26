@@ -977,6 +977,122 @@ html[data-sleep-mode="true"] .sceneSlide::before {
   animation: sceneIn 420ms ease both;
 }
 
+.sceneSlideNarrated {
+  grid-template-rows: auto 1fr auto;
+  height: 100svh;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: calc(10px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom));
+}
+
+.narratedHeader {
+  z-index: 6;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.narratedBackButton {
+  min-height: 46px;
+  padding: 0 13px;
+}
+
+.narratedHeaderCenter {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  justify-items: center;
+}
+
+.narratedTitle {
+  max-width: min(52vw, 360px);
+  font-size: clamp(1rem, 4.7vw, 1.7rem);
+}
+
+.dotProgressCompact {
+  width: min(100%, 168px);
+}
+
+.dotProgressCompact span {
+  width: 8px;
+  height: 8px;
+}
+
+.dotProgressCompact span + span {
+  margin-left: 9px;
+}
+
+.dotProgressCompact span + span::before {
+  top: 3px;
+  right: 8px;
+  width: 9px;
+  height: 2px;
+}
+
+.narratedImageStage {
+  min-height: 0;
+  padding: 12px 0;
+}
+
+.narratedSceneImage {
+  max-width: 100%;
+  max-height: min(76svh, 720px);
+  border-radius: 26px;
+  box-shadow:
+    0 0 0 1px rgba(255, 213, 116, 0.22),
+    0 28px 80px rgba(0, 0, 0, 0.58),
+    0 0 46px rgba(255, 188, 79, 0.16);
+}
+
+.narratedPlaceholder {
+  min-height: 70svh;
+}
+
+.narratedControls {
+  z-index: 8;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  width: min(100%, 520px);
+  margin: 0 auto;
+  padding: 8px;
+  border: 1px solid rgba(255, 210, 109, 0.22);
+  border-radius: 999px;
+  background: rgba(8, 12, 30, 0.62);
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(18px);
+}
+
+.audioButtonCompact {
+  min-height: 54px;
+  padding: 7px 18px 7px 8px;
+  font-size: 1rem;
+}
+
+.audioButtonCompact .audioLabel {
+  text-align: left;
+}
+
+.audioButtonCompact .waveform {
+  display: none;
+}
+
+.narratedExitButton {
+  min-height: 54px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 244, 219, 0.12);
+  color: #fff0c6;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .scenePlaceholder {
   width: min(100%, 860px);
   min-height: 50dvh;
@@ -1444,6 +1560,10 @@ html[data-sleep-mode="true"] .storyPanel {
     max-height: 58dvh;
   }
 
+  .narratedSceneImage {
+    max-height: min(78svh, 780px);
+  }
+
   .storyPanel {
     max-height: none;
   }
@@ -1532,6 +1652,36 @@ html[data-sleep-mode="true"] .storyPanel {
   .sceneImage {
     max-height: 36svh;
     border-radius: 20px;
+  }
+
+  .sceneSlideNarrated {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .narratedBackButton {
+    min-height: 42px;
+    padding: 0 10px;
+    font-size: 0.82rem;
+  }
+
+  .narratedTitle {
+    max-width: 48vw;
+    font-size: 0.98rem;
+  }
+
+  .narratedSceneImage {
+    max-height: 74svh;
+    border-radius: 20px;
+  }
+
+  .narratedControls {
+    grid-template-columns: 1fr;
+    border-radius: 24px;
+  }
+
+  .narratedExitButton {
+    min-height: 42px;
   }
 
   .storyPanel {

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 export default function AudioControls({
+  compact = false,
   audioUrl,
   sceneId,
   playSignal,
@@ -145,15 +146,27 @@ export default function AudioControls({
   }
 
   const isPlaying = status === "playing";
-  const label = isPlaying
-    ? "Pausar narración"
-    : status === "paused"
-      ? "Reanudar narración"
-      : "Reproducir narración";
+  const label = compact
+    ? isPlaying
+      ? "Pausar"
+      : status === "paused"
+        ? "Reanudar"
+        : "Reproducir"
+    : isPlaying
+      ? "Pausar narración"
+      : status === "paused"
+        ? "Reanudar narración"
+        : "Reproducir narración";
 
   return (
     <button
-      className={isPlaying ? "audioButton isPlaying" : "audioButton"}
+      className={[
+        "audioButton",
+        isPlaying ? "isPlaying" : "",
+        compact ? "audioButtonCompact" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       type="button"
       onClick={isPlaying ? pauseAudio : requestPlay}
     >
@@ -161,7 +174,7 @@ export default function AudioControls({
         {isPlaying ? "Ⅱ" : "▶"}
       </span>
       <span className="audioLabel">
-        {isPlaying ? "Reproduciendo narración" : label}
+        {compact ? label : isPlaying ? "Reproduciendo narración" : label}
       </span>
       <span className="waveform" aria-hidden="true">
         <i />
