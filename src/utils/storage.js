@@ -73,9 +73,10 @@ export function saveReadingMode(mode) {
 }
 
 export function getSleepMode() {
-  if (!canUseStorage()) return false;
+  if (!canUseStorage()) return true;
 
-  return window.localStorage.getItem(SLEEP_MODE_KEY) === "true";
+  const value = window.localStorage.getItem(SLEEP_MODE_KEY);
+  return value === null ? true : value === "true";
 }
 
 export function saveSleepMode(enabled) {

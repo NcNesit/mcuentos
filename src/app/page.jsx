@@ -21,7 +21,7 @@ export default function HomePage() {
   const [favoriteIds, setFavoriteIds] = useState([]);
   const [progress, setProgress] = useState({});
   const [readingMode, setReadingMode] = useState("narrated");
-  const [sleepMode, setSleepMode] = useState(false);
+  const [sleepMode, setSleepMode] = useState(true);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {

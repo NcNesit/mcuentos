@@ -13,6 +13,8 @@ export default function AudioControls({
   const audioRef = useRef(null);
   const onEndedRef = useRef(onEnded);
   const onUnavailableRef = useRef(onUnavailable);
+  const pendingPlayRef = useRef(false);
+  const lastPlaySignalRef = useRef(0);
   const [status, setStatus] = useState("idle");
   const [isUnavailable, setIsUnavailable] = useState(false);
 
@@ -22,55 +24,104 @@ export default function AudioControls({
   }, [onEnded, onUnavailable]);
 
   useEffect(() => {
-    setStatus("idle");
-    setIsUnavailable(false);
-
-    if (!audioUrl) {
-      setIsUnavailable(true);
-      onUnavailableRef.current?.();
-      return undefined;
+    if (!audioRef.current) {
+      const audio = new Audio();
+      audio.preload = "auto";
+      audioRef.current = audio;
     }
 
-    const audio = new Audio(audioUrl);
-    audio.preload = "metadata";
-    audioRef.current = audio;
+    const audio = audioRef.current;
 
     function handleEnded() {
+      pendingPlayRef.current = false;
       setStatus("ended");
       onEndedRef.current?.();
     }
 
     function handleError() {
+      pendingPlayRef.current = false;
       setIsUnavailable(true);
       setStatus("unavailable");
       onUnavailableRef.current?.();
     }
 
+    function handleCanPlay() {
+      if (pendingPlayRef.current) {
+        pendingPlayRef.current = false;
+        playAudio();
+      }
+    }
+
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("error", handleError);
+    audio.addEventListener("canplay", handleCanPlay);
 
     return () => {
+      pendingPlayRef.current = false;
       audio.pause();
-      audio.currentTime = 0;
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("error", handleError);
-      audioRef.current = null;
+      audio.removeEventListener("canplay", handleCanPlay);
     };
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    pendingPlayRef.current = false;
+    setStatus("idle");
+    setIsUnavailable(false);
+
+    if (!audioUrl || !audio) {
+      setIsUnavailable(true);
+      onUnavailableRef.current?.();
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+    audio.src = audioUrl;
+    audio.load();
+
+    if (narrationEnabled && playSignal > 0) {
+      pendingPlayRef.current = true;
+      if (audio.readyState >= 3) {
+        pendingPlayRef.current = false;
+        playAudio();
+      }
+    }
   }, [audioUrl, sceneId]);
 
   useEffect(() => {
     if (!playSignal || !narrationEnabled || isUnavailable) return;
-    playAudio();
+    if (playSignal === lastPlaySignalRef.current) return;
+
+    lastPlaySignalRef.current = playSignal;
+    requestPlay();
   }, [playSignal, narrationEnabled, isUnavailable]);
+
+  function requestPlay() {
+    const audio = audioRef.current;
+    if (!audio || isUnavailable) return;
+
+    if (audio.readyState < 3) {
+      pendingPlayRef.current = true;
+      audio.load();
+      return;
+    }
+
+    playAudio();
+  }
 
   async function playAudio() {
     const audio = audioRef.current;
     if (!audio || isUnavailable) return;
 
     try {
+      pendingPlayRef.current = false;
       await audio.play();
       setStatus("playing");
     } catch {
+      pendingPlayRef.current = false;
       setStatus("idle");
     }
   }
@@ -79,6 +130,7 @@ export default function AudioControls({
     const audio = audioRef.current;
     if (!audio) return;
 
+    pendingPlayRef.current = false;
     audio.pause();
     setStatus("paused");
   }
@@ -103,12 +155,14 @@ export default function AudioControls({
     <button
       className={isPlaying ? "audioButton isPlaying" : "audioButton"}
       type="button"
-      onClick={isPlaying ? pauseAudio : playAudio}
+      onClick={isPlaying ? pauseAudio : requestPlay}
     >
       <span className="audioIcon" aria-hidden="true">
         {isPlaying ? "Ⅱ" : "▶"}
       </span>
-      <span className="audioLabel">{isPlaying ? "Reproduciendo narración" : label}</span>
+      <span className="audioLabel">
+        {isPlaying ? "Reproduciendo narración" : label}
+      </span>
       <span className="waveform" aria-hidden="true">
         <i />
         <i />
